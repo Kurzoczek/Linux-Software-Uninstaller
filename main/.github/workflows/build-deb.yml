@@ -1,0 +1,42 @@
+name: Build .deb
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: apt-get update && apt-get install -y --no-install-recommends python3 dpkg-dev
+
+      - name: Check Python syntax
+        run: python3 -m py_compile linux_software_uninstaller/*.py
+
+      - name: Build package
+        run: ./packaging/build-deb.sh
+
+      - name: Inspect package
+        run: dpkg-deb --info linux-software-uninstaller_*_all.deb && dpkg-deb --contents linux-software-uninstaller_*_all.deb
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-software-uninstaller-deb
+          path: linux-software-uninstaller_*_all.deb
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: linux-software-uninstaller_*_all.deb
+          generate_release_notes: true

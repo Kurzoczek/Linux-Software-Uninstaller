@@ -1,0 +1,40 @@
+linux-software-uninstaller (2.2.0) unstable; urgency=medium
+
+  * English is now the main and default interface language.
+  * Polish translation; language can be chosen in Settings
+    (English, Polski or Automatic = system language).
+  * Root helper messages follow the interface language.
+  * Backup files renamed: packages.txt, config.tar.gz, other.txt,
+    restore.sh; activity log renamed to activity.log (migrated
+    automatically).
+  * README.Debian and package description in English.
+
+ -- Linux Software Uninstaller <linux-software-uninstaller@localhost>  Sun, 22 Nov 2026 05:50:00 +0100
+
+linux-software-uninstaller (2.1.0) unstable; urgency=medium
+
+  * Renamed from "Deinstalator" to "Linux Software Uninstaller".
+    Replaces the old "deinstalator" package.
+  * New paths: /usr/bin/linux-software-uninstaller,
+    ~/.config/linux-software-uninstaller,
+    /var/backups/linux-software-uninstaller.
+
+ -- Linux Software Uninstaller <linux-software-uninstaller@localhost>  Sun, 22 Nov 2026 05:40:00 +0100
+
+deinstalator (2.0.0) unstable; urgency=medium
+
+  * New interface: sidebar, statistics cards, list with icons, details
+    panel, light and dark theme.
+  * Root helper started through polkit.
+  * Backup before uninstalling: snapper, btrfs, Timeshift or a package
+    configuration backup.
+  * "Cleanup" page with "Clean up everything".
+  * .deb package with icon, menu entry and AppStream metadata.
+
+ -- Deinstalator <deinstalator@localhost>  Sun, 22 Nov 2026 05:30:00 +0100
+
+deinstalator (1.0) unstable; urgency=low
+
+  * First version (single PyQt6 script).
+
+ -- Deinstalator <deinstalator@localhost>  Sun, 22 Nov 2026 04:58:00 +0100
