@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Linux Software Uninstaller
+GenericName=Uninstaller
+GenericName[pl]=Odinstalowywanie programów
+Comment=Uninstall programs together with their leftovers
+Comment[pl]=Odinstaluj programy razem z ich pozostałościami
+Exec=linux-software-uninstaller
+Icon=linux-software-uninstaller
+Terminal=false
+StartupNotify=true
+StartupWMClass=linux-software-uninstaller
+Categories=Qt;KDE;System;Settings;PackageManager;
+Keywords=uninstall;remove;cleanup;apt;flatpak;snap;appimage;
+Keywords[pl]=odinstaluj;usuń;deinstalacja;sprzątanie;resztki;apt;flatpak;snap;appimage;

@@ -1,0 +1,177 @@
+Linux Software Uninstaller for Debian
+=====================================
+
+Linux Software Uninstaller is a graphical tool that removes applications
+together with their configuration and leftover files — an IObit
+Uninstaller–style program for Debian and KDE Plasma. It handles APT (.deb)
+packages, Flatpak, Snap, AppImage and programs unpacked by hand into /opt.
+
+The package targets Debian 13 "trixie" (Python 3.13, PyQt6, KDE Plasma 6).
+It should also work on other desktops as long as a polkit agent is running.
+
+
+Starting
+--------
+
+From the menu: System → Linux Software Uninstaller
+From a terminal: linux-software-uninstaller
+
+Run it as a normal user. Do not use "sudo linux-software-uninstaller" — the
+program asks for the administrator password itself when it needs it.
+
+
+Language
+--------
+
+The interface is available in English (default) and Polish. Change it in
+Settings → Language; "Automatic" follows the system language ($LANG).
+The change takes effect after a restart.
+
+
+How privileges work
+-------------------
+
+The window never runs as root. Operations that need administrator rights
+are performed by a separate helper:
+
+  /usr/libexec/linux-software-uninstaller/lsu-helper
+
+started through pkexec using the polkit action:
+
+  linux-software-uninstaller.helper
+  (/usr/share/polkit-1/actions/linux-software-uninstaller.policy)
+
+By default the administrator password is required (auth_admin_keep) and
+polkit remembers it for a few minutes. The helper accepts only the commands
+"uninstall", "remove-paths" and "cleanup", validates package names, and
+refuses paths outside the allowed folders as well as files owned by
+installed packages.
+
+An administrator can change the rules with a polkit rule, e.g. in
+/etc/polkit-1/rules.d/50-linux-software-uninstaller.rules:
+
+  polkit.addRule(function(action, subject) {
+      if (action.id == "linux-software-uninstaller.helper" && subject.isInGroup("sudo")) {
+          return polkit.Result.AUTH_ADMIN_KEEP;
+      }
+  });
+
+
+Backup before uninstalling
+--------------------------
+
+Enabled in Settings (on by default). The method is chosen automatically:
+
+  * btrfs with snapper configured — snapper snapshot ("root" config),
+    restore with: snapper rollback
+  * btrfs without snapper — read-only snapshot in
+    /.snapshots/lsu-YYYYMMDD-HHMMSS
+  * another file system (e.g. ext4) with Timeshift — Timeshift restore
+    point; Timeshift has to be configured once beforehand
+  * anything else — configuration backup in
+    /var/backups/linux-software-uninstaller/<date>/:
+        packages.txt     removed packages with their versions
+        config.tar.gz    their configuration files (conffiles) from /etc
+        other.txt        removed Flatpak, Snap and /opt programs
+        restore.sh       restore script
+
+    To restore:
+        sudo sh /var/backups/linux-software-uninstaller/<date>/restore.sh
+
+    The folder is readable by root only (it may contain passwords from
+    /etc). The 20 newest backups are kept. This backup does not include
+    Flatpak data or the contents of /opt folders.
+
+If a full snapshot fails, the program still saves the configuration backup
+before uninstalling anything.
+
+
+Leftover files
+--------------
+
+After uninstalling, the program looks for files left behind:
+
+  * in your home folder: ~/.config, ~/.local/share, ~/.local/state,
+    ~/.cache, ~/.var/app (Flatpak), autostart, menu entries, user systemd
+    units, ~/.local/bin and hidden files in the home folder,
+  * system-wide: /etc, /var/lib, /var/cache, /var/log, /opt, /usr/local,
+    APT repositories and their keys (sources.list.d, keyrings,
+    trusted.gpg.d), systemd units and autostart entries.
+
+"Confirmed" matches are pre-selected, "possible" ones must be selected by
+hand. Files owned by installed packages and by programs that are still
+installed are skipped. Files from the home folder go to the Trash by
+default (restore them in Dolphin); system files are deleted permanently.
+
+
+Files
+-----
+
+  /usr/bin/linux-software-uninstaller                     launcher
+  /usr/share/linux-software-uninstaller/                  Python modules
+  /usr/libexec/linux-software-uninstaller/                root helper
+  /usr/share/polkit-1/actions/                            polkit action
+  ~/.config/linux-software-uninstaller/                   user settings
+  ~/.local/state/linux-software-uninstaller/activity.log  activity log
+  /var/backups/linux-software-uninstaller/                configuration backups
+
+
+Upgrading from "deinstalator"
+-----------------------------
+
+This package replaces the old "deinstalator" package; apt removes the old
+one automatically. On first start, settings and the activity log are copied
+from the old locations (~/.config/deinstalator,
+~/.local/state/deinstalator). Old backups stay in /var/backups/deinstalator.
+
+If you used version 1.0 (a single script), remove it by hand:
+
+  rm ~/.local/bin/deinstalator ~/.local/share/applications/deinstalator.desktop
+
+
+Removing Linux Software Uninstaller
+-----------------------------------
+
+  sudo apt purge linux-software-uninstaller
+
+Settings and the log in your home folder, and backups in
+/var/backups/linux-software-uninstaller, are kept — remove them by hand if
+you do not need them:
+
+  rm -r ~/.config/linux-software-uninstaller ~/.local/state/linux-software-uninstaller
+  sudo rm -r /var/backups/linux-software-uninstaller
+
+
+Troubleshooting
+---------------
+
+No password prompt appears
+  No polkit agent is running. On KDE Plasma it is provided by
+  polkit-kde-agent-1. Check with: dpkg -l polkit-kde-agent-1
+
+"apt does not allow removing these packages"
+  Another APT operation is running (e.g. Discover or automatic updates) or
+  the system has unmet dependencies. Try: sudo apt -f install
+
+Missing program icon in the menu or window
+  Install SVG support for Qt 6: sudo apt install qt6-svg-plugins
+
+Timeshift does not work
+  Run "sudo timeshift-gtk" or "sudo timeshift --setup" once and choose a
+  backup device.
+
+Removing a snap or flatpak fails
+  Make sure the program is not running and try again.
+
+Interface errors are printed when the program is started from a terminal:
+  linux-software-uninstaller
+
+
+Building the package from source
+--------------------------------
+
+  sudo apt install python3 dpkg-dev
+  ./packaging/build-deb.sh
+  sudo apt install ./linux-software-uninstaller_*_all.deb
+
+ -- Linux Software Uninstaller <linux-software-uninstaller@localhost>  Sun, 22 Nov 2026 05:50:00 +0100
